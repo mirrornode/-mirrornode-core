@@ -1,0 +1,9 @@
+{
+  "name": "mirrornode-core-sample",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test.js"
+  }
+}
