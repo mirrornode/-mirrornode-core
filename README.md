@@ -1,48 +1,49 @@
-# mirrornode-core (scaffold)
+# mirrornode-core
 
-This repository was empty; I added a small CI + container scaffold so you have a working baseline for builds, tests, and image publishing.
+This repository now contains a lightweight HTTP service, automated tests, Docker packaging, and GitHub/Vercel deployment hooks so the codebase is ready for production hardening.
 
-What I added
+## Repository layout
 
-- `app/` — minimal Node.js app (index.js + test)
-- `Dockerfile` — multi-stage build for a small Node app
-- `.dockerignore` — typical ignores
-- `docker-compose.yml` — dev compose to run the service locally
-- `.github/workflows/build-test.yml` — run tests + build image (CI)
-- `.github/workflows/build-and-push.yml` — build and push to a container registry on `main` (configurable)
+- `app/` — Node.js service exposing readiness (`/`) and health (`/health`) endpoints
+- `Dockerfile` — container image definition for the service
+- `docker-compose.yml` — local development runner
+- `.github/workflows/` — CI pipelines for tests and image builds
+- `vercel.json` — configuration for deploying the service to Vercel
 
-Registry notes
+## Local development
 
-- Example registry used in workflows is `ghcr.io`. To push to GHCR you will likely need a Personal Access Token with `write:packages` scope set in the repository secrets as `CR_PAT`. In some orgs `GITHUB_TOKEN` with correct permissions may be enough.
-- You can change the target registry, image name, and secret names in `.github/workflows/build-and-push.yml`.
-
-How to run locally
-
-1. Build image locally (requires Docker installed):
-
-```bash
-cd /Users/morningstar/-mirrornode-core
-docker build -t mirrornode-core:local .
-```
-
-2. Run via docker-compose:
-
-```bash
-docker compose up --build
-```
-
-3. Run tests locally (Node.js needed):
+Run the service directly with Node:
 
 ```bash
 cd app
-npm install
+npm start
+```
+
+Execute the built-in test suite:
+
+```bash
+cd app
 npm test
 ```
 
-Next steps I can take for you
+Build and run the container locally:
 
-- Change the scaffold to a different language or framework (Go, Java, Python).
-- Make the workflows push to Docker Hub or ECR instead of GHCR.
-- Add multi-arch builds and caching for faster CI.
+```bash
+docker build -t mirrornode-core:local .
+docker compose up --build
+```
 
-If you'd like me to open a PR or keep these changes on a branch, tell me the branch name to create and I will prepare a patch or a PR.
+## Continuous integration & delivery
+
+- **Build and Test** (`.github/workflows/build-test.yml`) runs on every push/PR. It installs dependencies, executes the Node test runner, and performs a Docker build to ensure image compatibility.
+- **Build and Push** (`.github/workflows/build-and-push.yml`) builds multi-architecture images on pushes to `main` and pushes them to `ghcr.io/${{ github.repository_owner }}/mirrornode-core:latest`. Configure the `REGISTRYUSERNAME` and `REGISTRYPASSWORD` secrets with credentials that can push to your container registry.
+
+## Vercel deployment
+
+Deploy the service to Vercel by importing the repository in the Vercel dashboard. The included `vercel.json` routes all traffic to `app/vercel.js`, which reuses the same HTTP handlers as the Node server.
+
+## Next steps
+
+- Expand the API surface or integrate with upstream data sources.
+- Harden observability (structured logs, metrics) and add more coverage for edge cases.
+- Swap the runtime for another language/framework if requirements change.

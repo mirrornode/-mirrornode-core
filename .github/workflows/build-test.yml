@@ -10,11 +10,6 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    services:
-      docker:
-        image: docker:20.10.16
-        options: --privileged
-
     steps:
       - uses: actions/checkout@v4
 
@@ -25,15 +20,15 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./app
-        run: |
-          npm ci || npm install
+        run: npm install --no-audit --no-fund
 
       - name: Run tests
         working-directory: ./app
-        run: npm test &
+        run: npm test
 
       - name: Build Docker image (local check)
         uses: docker/build-push-action@v4
         with:
+          context: .
           push: false
           tags: mirrornode-core:ci
